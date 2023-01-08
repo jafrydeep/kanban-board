@@ -1,24 +1,24 @@
-import React, { useEffect, useState } from "react";
-import Card from "../Card/Card";
-import "./Board.css";
-import { MoreHorizontal } from "react-feather";
-import Editable from "../Editable/Editable";
-import Dropdown from "../Dropdown/Dropdown";
-import { Droppable } from "react-beautiful-dnd";
+import React, { useEffect, useState } from 'react'
+import Card from '../Card/Card'
+import './Board.css'
+import { MoreHorizontal } from 'react-feather'
+import Editable from '../Editable/Editable'
+import Dropdown from '../Dropdown/Dropdown'
+import { Droppable } from 'react-beautiful-dnd'
 export default function Board(props) {
-  const [show, setShow] = useState(false);
-  const [dropdown, setDropdown] = useState(false);
+  const [show, setShow] = useState(false)
+  const [dropdown, setDropdown] = useState(false)
 
   useEffect(() => {
-    document.addEventListener("keypress", (e) => {
-      if (e.code === "Enter") setShow(false);
-    });
+    document.addEventListener('keypress', (e) => {
+      if (e.code === 'Enter') setShow(false)
+    })
     return () => {
-      document.removeEventListener("keypress", (e) => {
-        if (e.code === "Enter") setShow(false);
-      });
-    };
-  });
+      document.removeEventListener('keypress', (e) => {
+        if (e.code === 'Enter') setShow(false)
+      })
+    }
+  })
 
   return (
     <div className="board">
@@ -27,10 +27,10 @@ export default function Board(props) {
           <div>
             <input
               className="title__input"
-              type={"text"}
+              type={'text'}
               defaultValue={props.name}
               onChange={(e) => {
-                props.setName(e.target.value, props.id);
+                props.setName(e.target.value, props.id)
               }}
             />
           </div>
@@ -38,18 +38,18 @@ export default function Board(props) {
           <div>
             <p
               onClick={() => {
-                setShow(true);
+                setShow(true)
               }}
               className="board__title"
             >
-              {props?.name || "Name of Board"}
+              {props?.name || 'Name of Board'}
               <span className="total__cards">{props.card?.length}</span>
             </p>
           </div>
         )}
         <div
           onClick={() => {
-            setDropdown(true);
+            setDropdown(true)
           }}
         >
           <MoreHorizontal />
@@ -57,7 +57,7 @@ export default function Board(props) {
             <Dropdown
               class="board__dropdown"
               onClose={() => {
-                setDropdown(false);
+                setDropdown(false)
               }}
             >
               <p onClick={() => props.removeBoard(props.id)}>Delete Board</p>
@@ -89,14 +89,6 @@ export default function Board(props) {
           </div>
         )}
       </Droppable>
-      <div className="board__footer">
-        <Editable
-          name={"Add Card"}
-          btnName={"Add Card"}
-          placeholder={"Enter Card Title"}
-          onSubmit={(value) => props.addCard(value, props.id)}
-        />
-      </div>
     </div>
-  );
+  )
 }

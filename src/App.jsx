@@ -1,166 +1,149 @@
-import { useEffect, useState } from "react";
-import "./App.css";
-import Navbar from "../components/Navbar/Navbar";
-import Board from "../components/Board/Board";
-// import data from '../data'
-import { DragDropContext } from "react-beautiful-dnd";
-import { v4 as uuidv4 } from "uuid";
-import Editable from "../components/Editable/Editable";
-import useLocalStorage from "use-local-storage";
-import "../bootstrap.css";
+import { useEffect, useState } from 'react'
+import './App.css'
+import '../bootstrap.css'
+import Board from '../components/Board/Board'
+import { DragDropContext } from 'react-beautiful-dnd'
+import { v4 as uuidv4 } from 'uuid'
+import useLocalStorage from 'use-local-storage'
+import { initialBoard } from './initialBoard'
+
 function App() {
-  const [data, setData] = useState(
-    localStorage.getItem("kanban-board")
-      ? JSON.parse(localStorage.getItem("kanban-board"))
-      : []
-  );
-
-  const defaultDark = window.matchMedia(
-    "(prefers-colors-scheme: dark)"
-  ).matches;
+  const defaultDark = window.matchMedia('(prefers-colors-scheme: dark)').matches
   const [theme, setTheme] = useLocalStorage(
-    "theme",
-    defaultDark ? "dark" : "light"
-  );
+    'theme',
+    defaultDark ? 'dark' : 'light',
+  )
 
-  const switchTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
-  };
+  const [boardData, setBoardData] = useState(initialBoard)
+  const [taskTitle, setTaskTitle] = useState('')
 
   const setName = (title, bid) => {
-    const index = data.findIndex((item) => item.id === bid);
-    const tempData = [...data];
-    tempData[index].boardName = title;
-    setData(tempData);
-  };
+    const index = boardData.findIndex((item) => item.id === bid)
+    const tempData = [...boardData]
+    tempData[index].boardName = title
+    setBoardData(tempData)
+  }
 
   const dragCardInBoard = (source, destination) => {
-    let tempData = [...data];
-    const destinationBoardIdx = tempData.findIndex(
-      (item) => item.id.toString() === destination.droppableId
-    );
+    let tempData = [...boardData]
+    const destinationBoardIdx = boardData.findIndex(
+      (item) => item.id.toString() === destination.droppableId,
+    )
     const sourceBoardIdx = tempData.findIndex(
-      (item) => item.id.toString() === source.droppableId
-    );
+      (item) => item.id.toString() === source.droppableId,
+    )
     tempData[destinationBoardIdx].card.splice(
       destination.index,
       0,
-      tempData[sourceBoardIdx].card[source.index]
-    );
-    tempData[sourceBoardIdx].card.splice(source.index, 1);
+      tempData[sourceBoardIdx].card[source.index],
+    )
+    tempData[sourceBoardIdx].card.splice(source.index, 1)
 
-    return tempData;
-  };
-
-  // const dragCardInSameBoard = (source, destination) => {
-  //   let tempData = Array.from(data);
-  //   console.log("Data", tempData);
-  //   const index = tempData.findIndex(
-  //     (item) => item.id.toString() === source.droppableId
-  //   );
-  //   console.log(tempData[index], index);
-  //   let [removedCard] = tempData[index].card.splice(source.index, 1);
-  //   tempData[index].card.splice(destination.index, 0, removedCard);
-  //   setData(tempData);
-  // };
-
-  const addCard = (title, bid) => {
-    const index = data.findIndex((item) => item.id === bid);
-    const tempData = [...data];
-    tempData[index].card.push({
-      id: uuidv4(),
-      title: title,
-      tags: [],
-      task: [],
-    });
-    setData(tempData);
-  };
+    return tempData
+  }
 
   const removeCard = (boardId, cardId) => {
-    const index = data.findIndex((item) => item.id === boardId);
-    const tempData = [...data];
-    const cardIndex = data[index].card.findIndex((item) => item.id === cardId);
+    const index = boardData.findIndex((item) => item.id === boardId)
+    const tempData = [...boardData]
+    const cardIndex = boardData[index].card.findIndex(
+      (item) => item.id === cardId,
+    )
 
-    tempData[index].card.splice(cardIndex, 1);
-    setData(tempData);
-  };
-
-  const addBoard = (title) => {
-    const tempData = [...data];
-    tempData.push({
-      id: uuidv4(),
-      boardName: title,
-      card: [],
-    });
-    setData(tempData);
-  };
-
-  const removeBoard = (bid) => {
-    const tempData = [...data];
-    const index = data.findIndex((item) => item.id === bid);
-    tempData.splice(index, 1);
-    setData(tempData);
-  };
+    tempData[index].card.splice(cardIndex, 1)
+    setBoardData(tempData)
+  }
 
   const onDragEnd = (result) => {
-    const { source, destination } = result;
-    if (!destination) return;
+    const { source, destination } = result
+    if (!destination) return
 
-    if (source.droppableId === destination.droppableId) return;
+    if (source.droppableId === destination.droppableId) return
 
-    setData(dragCardInBoard(source, destination));
-  };
+    setBoardData(dragCardInBoard(source, destination))
+  }
 
   const updateCard = (bid, cid, card) => {
-    const index = data.findIndex((item) => item.id === bid);
-    if (index < 0) return;
+    const index = boardData.findIndex((item) => item.id === bid)
+    if (index < 0) return
 
-    const tempBoards = [...data];
-    const cards = tempBoards[index].card;
+    const tempBoards = [...boardData]
+    const cards = tempBoards[index].card
 
-    const cardIndex = cards.findIndex((item) => item.id === cid);
-    if (cardIndex < 0) return;
+    const cardIndex = cards.findIndex((item) => item.id === cid)
+    if (cardIndex < 0) return
 
-    tempBoards[index].card[cardIndex] = card;
-    console.log(tempBoards);
-    setData(tempBoards);
-  };
+    tempBoards[index].card[cardIndex] = card
+    setBoardData(tempBoards)
+  }
 
+  const handleSubmitTask = () => {
+    const tempData = [...boardData]
+    tempData[0].card.push({
+      id: uuidv4(),
+      title: taskTitle,
+      tags: [],
+      task: [],
+    })
+    // set board data
+    setBoardData(tempData)
+
+    // set task title
+    setTaskTitle('')
+  }
+ 
   useEffect(() => {
-    localStorage.setItem("kanban-board", JSON.stringify(data));
-  }, [data]);
+    localStorage.setItem('kanban-assignment-data', JSON.stringify(boardData))
+  }, [boardData])
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
-      <div className="App" data-theme={theme}>
-        <Navbar switchTheme={switchTheme} />
-        <div className="app_outer">
-          <div className="app_boards">
-            {data.map((item) => (
-              <Board
-                key={item.id}
-                id={item.id}
-                name={item.boardName}
-                card={item.card}
-                setName={setName}
-                addCard={addCard}
-                removeCard={removeCard}
-                removeBoard={removeBoard}
-                updateCard={updateCard}
+    <>
+      <div className="local__bootstrap">
+        <div className="container">
+          <div className="d-flex justify-content-center mt-5">
+            <div className="col-12 col-lg-6 d-flex">
+              <input
+                className="form-control"
+                type="text"
+                value={taskTitle}
+                onChange={(e) => setTaskTitle(e.target.value)}
+                name="taskTitle"
+                placeholder="Enter task here"
               />
-            ))}
-            <Editable
-              class={"add__board"}
-              name={"Add Board"}
-              btnName={"Add Board"}
-              onSubmit={addBoard}
-              placeholder={"Enter Board  Title"}
-            />
+
+              <button
+                type="button"
+                onClick={handleSubmitTask}
+                className="btn btn-primary mx-2"
+              >
+                Submit
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </DragDropContext>
-  );
+      <DragDropContext onDragEnd={onDragEnd}>
+        <div className="App" data-theme={theme}>
+          {/* create */}
+          <div className="app_outer local__bootstrap">
+            {/* board */}
+            <div className="app_boards  justify-content-center d-block d-lg-flex">
+              {boardData.map((item) => (
+                <Board
+                  key={item.id}
+                  id={item.id}
+                  name={item.boardName}
+                  card={item.card}
+                  setName={setName}
+                  removeCard={removeCard}
+                  updateCard={updateCard}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </DragDropContext>
+    </>
+  )
 }
 
-export default App;
+export default App
